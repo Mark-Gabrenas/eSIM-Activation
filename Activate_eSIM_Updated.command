@@ -16,10 +16,10 @@ UPDATE_SERVER="10.2.1.6" # Where is the update server for automatic updates of t
 
 #Get the unit's serial number
 SERIAL=$(cfgutil get serialNumber)
-until [ -n ${SERIAL} ]; do
+until [ ! -z ${SERIAL} ]; do
 	echo "Waiting on iPad"
 	sleep 5
-	SERIAL=$(cfgutil get serialNumber)
+	SERIAL=$(cfgutil get serialNumber) 2>&1 /dev/null
 done
 echo "Serial number is: $SERIAL"
 
