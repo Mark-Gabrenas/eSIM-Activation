@@ -7,6 +7,11 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin: export PATH
 #Define Settings
 ###################
 
+VER="0.2" # Launcher version number, note the single decimal point
+
+HOST_ADDRESS="10.2.1.6" #Web server host, including port number if not 80. Do not include http://
+UPDATE_SERVER="10.2.1.6" # Where is the update server for automatic updates of this script
+
 ####################### Gather order information #######################
 
 #Get the unit's serial number
