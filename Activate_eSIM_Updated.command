@@ -7,19 +7,19 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin: export PATH
 #Define Settings
 ###################
 
-VER="0.2" # Launcher version number, note the single decimal point
+VER="0.2" # Script version number, note the single decimal point
 
 HOST_ADDRESS="10.2.1.6" #Web server host, including port number if not 80. Do not include http://
 UPDATE_SERVER="10.2.1.6" # Where is the update server for automatic updates of this script
 
 ####################### Gather order information #######################
 
-#Get the unit's serial number
+#Get the unit's serial number. We are using the first iPad to respond's serial number for order lookup
 SERIAL=$(cfgutil get serialNumber)
 until [ ! -z ${SERIAL} ]; do
 	echo "Waiting on iPad"
 	sleep 5
-	SERIAL=$(cfgutil get serialNumber) 2>&1 /dev/null
+	SERIAL=$(cfgutil get serialNumber 2> /dev/null)
 done
 echo "Serial number is: $SERIAL"
 
@@ -27,7 +27,7 @@ echo "Serial number is: $SERIAL"
 ENC_SERIAL=$(echo "##&query=systemSearch&STRING=${SERIAL}&##" |base64 )
 DEP_INFO=$(curl "https://secure.crest-tech.net/admin/ai/dnaquery.tpl?${ENC_SERIAL}" | base64 -D | awk -F "%3D" {'print $12'} |awk -F "%2" {'print $1'})
 
-#Download encrypted password from server
+#Download encrypted password and data from server
 secret=$(curl -s http://${HOST_ADDRESS}/dc_config/${DEP_INFO}.txt |grep "MDM_PASS" |awk {'print $2'})
 JAMF_USER=$(curl -s http://${HOST_ADDRESS}/dc_config/${DEP_INFO}.txt |grep "MDM_USER" |awk {'print $2'})
 JAMF_URL=$(curl -s http://${HOST_ADDRESS}/dc_config/${DEP_INFO}.txt |grep "MDM_URL" |awk {'print $2'})
@@ -39,21 +39,10 @@ JAMF_PASS=$(echo "${secret}" | openssl enc -d -aes-128-cbc -k "CREST-UPW-salt" -
 
 #################################################################################
 
-#ESIM_URL="https://2.vzw.otgeuicc.com" # URL of SM-DP+ server provided by the cellular carrier/mobile network operator. Do not add trailing "/" at end of URL.
 MDM="jamf" # Supported MDMs are - jamf
 PHONE_NUMBER_VERIFICATION="on" # Whether this script will verify the cellular data number on devices before considering eSIM as active - possible values "on" "off". Verification can take a while.
 MINUTES_TO_WAIT_FOR_PHONE_NUMBER="10" # Minutes to wait for CDN when PHONE_NUMBER_VERIFICATION is "on"
 SECONDS_TO_WAIT_BETWEEN_ACTIVATIONS="5" # eSIM activations should be staggered as not to overwhelm carrier services.
-
-
-###################
-#Jamf Configuration
-###################
-
-#JAMF_URL="https://jcps.jamfcloud.com/" # Base URL of Jamf instance
-#JAMF_USER="crest" # User with API access to Jamf with ability to send commands
-#JAMF_PASS="Crest11a1234567!" # Password for Jamf user
-
 
 ##################### DO NOT EDIT BELOW THIS LINE ###############################
 #################################################################################
